@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Таблица</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+        a:hover {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<script>
+    //TASK #1
+    function findLongestNonRepeatingSubStr(input) {
+        let chars = input.split('');
+        let currChar;
+        let str = "";
+        let longestStr = "";
+        let hash = {};
+        for (let i = 0; i < chars.length; i++) {
+            currChar = chars[i];
+            if (!hash[chars[i]]) {
+                str += currChar;
+                hash[chars[i]] = {
+                    index: i
+                };
+            } else {
+                if (longestStr.length <= str.length) {
+                    longestStr = str;
+                }
+                let prevDupeIndex = hash[currChar].index;
+                let strFromPrevDupe = input.substring(prevDupeIndex + 1, i);
+                str = strFromPrevDupe + currChar;
+                hash = {};
+                for (let j = prevDupeIndex + 1; j <= i; j++) {
+                    hash[input.charAt(j)] = {
+                        index: j
+                    };
+                }
+            }
+        }
+        return longestStr.length > str.length ? longestStr : str;
+    }
+    //TASK #2
+    function revert(n) {
+        let x = 0;
+        while (n > 0) {
+            x = (x * 10) + (n % 10);
+            n = parseInt(n / 10);
+        }
+        return x;
+    }
+    //TEST
+    console.log(findLongestNonRepeatingSubStr("asddwwertyuoooo")); // wertyuo
+    console.log(revert(12984423)); // 32448921
+</script>
+
+<body>
+    <div id="app">
+        <table class="table table-striped">
+            <thead>
+                <th>№</th>
+                <th><a @click="sort('name')">Name</a></th>
+                <th><a @click="sort('email')">Email</a></th>
+                <th><a @click="sort('age')">Age</a></th>
+            </thead>
+            <tbody>
+                <tr v-for="(user,index) in users">
+                    <td>{{index + 1}}</td>
+                    <td>{{user.name}}</td>
+                    <td>{{user.email}}</td>
+                    <td>{{user.age}}</td>
+            </tbody>
+        </table>
+    </div>
+    <script src="https://unpkg.com/vue"></script>
+    <script>
+        //TASK #3
+        var app = new Vue({
+            el: '#app',
+            data: {
+                lastSortParam: '',
+                users: [{name: 'Andew',email: 'abavich@ukr.net',age: 22},
+                        {name: 'Natalia', email: 'tut@ukr.net', age: 24},
+                        {name: 'Bogdan', email: 'tam@ukr.net', age: 22},
+                        {name: 'Kate', email: 'gde-to@ukr.net', age: 26},
+                        {name: 'Dima', email: 'work@ukr.net', age: 62},
+                        {name: 'Oleg', email: 'laravel@ukr.net', age: 32}]
+            },
+            methods: {
+                sort(param) {
+                    switch (param) {
+                        case 'name':
+                            if (this.lastSortParam != param)
+                                this.users.sort(this.sortByName);
+                            else
+                                this.users.reverse();
+                            break;
+                        case 'email':
+                            if (this.lastSortParam != param)
+                                this.users.sort(this.sortByEmail);
+                            else
+                                this.users.reverse();
+                            break;
+                        case 'age':
+                            if (this.lastSortParam != param)
+                                this.users.sort(this.sortByAge);
+                            else
+                                this.users.reverse();
+                            break;
+                    }
+                    this.lastSortParam = param;
+                },
+                sortByName(d1, d2) {
+                    return (d1.name.toLowerCase() > d2.name.toLowerCase()) ? 1 : -1;
+                },
+                sortByEmail(d1, d2) {
+                    return (d1.email.toLowerCase() > d2.email.toLowerCase()) ? 1 : -1;
+                },
+                sortByAge(d1, d2) {
+                    return (d1.age > d2.age) ? 1 : -1;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
