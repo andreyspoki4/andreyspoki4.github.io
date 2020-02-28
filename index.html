@@ -1,128 +1,216 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Таблица</title>
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <style>
-        a:hover {
-            cursor: pointer;
-        }
-    </style>
+	<meta charset="utf-8" />
+	<title>Gamedev Phaser</title>
+	<style>* { padding: 0; margin: 0; }</style>
+	<script src="js/phaser.min.js"></script>
 </head>
-<script>
-    //TASK #1
-    function findLongestNonRepeatingSubStr(input) {
-        let chars = input.split('');
-        let currChar;
-        let str = "";
-        let longestStr = "";
-        let hash = {};
-        for (let i = 0; i < chars.length; i++) {
-            currChar = chars[i];
-            if (!hash[chars[i]]) {
-                str += currChar;
-                hash[chars[i]] = {
-                    index: i
-                };
-            } else {
-                if (longestStr.length <= str.length) {
-                    longestStr = str;
-                }
-                let prevDupeIndex = hash[currChar].index;
-                let strFromPrevDupe = input.substring(prevDupeIndex + 1, i);
-                str = strFromPrevDupe + currChar;
-                hash = {};
-                for (let j = prevDupeIndex + 1; j <= i; j++) {
-                    hash[input.charAt(j)] = {
-                        index: j
-                    };
-                }
-            }
-        }
-        return longestStr.length > str.length ? longestStr : str;
-    }
-    //TASK #2
-    function revert(n) {
-        let x = 0;
-        while (n > 0) {
-            x = (x * 10) + (n % 10);
-            n = parseInt(n / 10);
-        }
-        return x;
-    }
-    //TEST
-    console.log(findLongestNonRepeatingSubStr("asddwwertyuoooo")); // wertyuo
-    console.log(revert(12984423)); // 32448921
-</script>
-
 <body>
-    <div id="app">
-        <table class="table table-striped">
-            <thead>
-                <th>№</th>
-                <th><a @click="sort('name')">Name</a></th>
-                <th><a @click="sort('email')">Email</a></th>
-                <th><a @click="sort('age')">Age</a></th>
-            </thead>
-            <tbody>
-                <tr v-for="(user,index) in users">
-                    <td>{{index + 1}}</td>
-                    <td>{{user.name}}</td>
-                    <td>{{user.email}}</td>
-                    <td>{{user.age}}</td>
-            </tbody>
-        </table>
-    </div>
-    <script src="https://unpkg.com/vue"></script>
-    <script>
-        //TASK #3
-        var app = new Vue({
-            el: '#app',
-            data: {
-                lastSortParam: '',
-                users: [{name: 'Andew',email: 'abavich@ukr.net',age: 22},
-                        {name: 'Natalia', email: 'tut@ukr.net', age: 24},
-                        {name: 'Bogdan', email: 'tam@ukr.net', age: 22},
-                        {name: 'Kate', email: 'gde-to@ukr.net', age: 26},
-                        {name: 'Dima', email: 'work@ukr.net', age: 62},
-                        {name: 'Oleg', email: 'laravel@ukr.net', age: 32}]
-            },
-            methods: {
-                sort(param) {
-                    switch (param) {
-                        case 'name':
-                            if (this.lastSortParam != param)
-                                this.users.sort(this.sortByName);
-                            else
-                                this.users.reverse();
-                            break;
-                        case 'email':
-                            if (this.lastSortParam != param)
-                                this.users.sort(this.sortByEmail);
-                            else
-                                this.users.reverse();
-                            break;
-                        case 'age':
-                            if (this.lastSortParam != param)
-                                this.users.sort(this.sortByAge);
-                            else
-                                this.users.reverse();
-                            break;
-                    }
-                    this.lastSortParam = param;
-                },
-                sortByName(d1, d2) {
-                    return (d1.name.toLowerCase() > d2.name.toLowerCase()) ? 1 : -1;
-                },
-                sortByEmail(d1, d2) {
-                    return (d1.email.toLowerCase() > d2.email.toLowerCase()) ? 1 : -1;
-                },
-                sortByAge(d1, d2) {
-                    return (d1.age > d2.age) ? 1 : -1;
-                }
-            }
-        });
-    </script>
+<script>
+	let typeFishs = [
+		{name: 'shark', img: 'img/shark.png', lvl: 1, width: 60, height: 20},
+		{name: 'fish-lvl-1', img: 'img/1.png', lvl: 1, width: 45, height: 15, pointsByKill: 1, speed: 150},
+		{name: 'fish-lvl-2', img: 'img/2.png', lvl: 2, width: 75, height: 25, pointsByKill: 2, speed: 170},
+		{name: 'fish-lvl-3', img: 'img/3.png', lvl: 3, width: 105, height: 35, pointsByKill: 3, speed: 180},
+		{name: 'fish-lvl-4', img: 'img/4.png', lvl: 4, width: 120, height: 40, pointsByKill: 4, speed: 200},
+		{name: 'fish-lvl-5', img: 'img/5.png', lvl: 5, width: 150, height: 50, pointsByKill: 5, speed: 220},
+		{name: 'fish-lvl-6', img: 'img/6.png', lvl: 6, width: 175, height: 65, pointsByKill: 6, speed: 230},
+		{name: 'killer-1', img: 'img/killer1.png', lvl: 9999, width: 80, height: 80, pointsByKill: 100, speed: 70},
+		{name: 'killer-5', img: 'img/killer2.png', lvl: 9999, width: 150, height: 50, pointsByKill: 100, speed: 450}
+	];
+	let typeKillers = [
+
+	];
+	let live, killersTime1, killersTime2;
+	let scoreText;
+	let score = 0
+	let scoreForNextLvl = 10;
+	let lvl = 1;
+	let timer;
+	let sea, floor;
+	let fishs, killers, shark;
+
+	let game = new Phaser.Game({
+		renderer: Phaser.CANVAS,
+		width: 800,
+		height: 600,
+		state: {
+			preload: preload,
+			create: create,
+			update: update
+		}
+	});
+
+	function preload() {
+		game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+		game.scale.pageAlignHorizontally = true;
+		game.scale.pageAlignVertically = true;
+		game.stage.backgroundColor = '#3ba0ee';
+
+		game.load.image('sea', 'img/sea_dark.png');
+		game.load.image('floor', 'img/sand_floor.png');
+		for(let fish of typeFishs)
+			game.load.image(fish.name, fish.img);
+
+
+
+	}
+	function create() {
+		game.physics.startSystem(Phaser.Physics.ARCADE);
+
+		createMap();
+
+		createShark();
+		movingSharkDirection();
+
+		scoreText = game.add.text(5, game.world.height - 25, 'Score: 0', { font: '18px Arial', fill: '#0095DD' });
+
+		createFishs();
+		createKillers();
+
+	}
+	function update() {
+		game.physics.arcade.collide(shark, fishs.children, eat);
+	}
+	function eat(shark, fish) {
+		let fishInfo = typeFishs[fish.numFish];
+		if(typeFishs[0].lvl >= fishInfo.lvl){
+			score += fishInfo.pointsByKill;
+			scoreForNextLvl -= fishInfo.pointsByKill;
+			fish.destroy();
+			if(scoreForNextLvl <= 0 ){
+				typeFishs[0].lvl += 1;
+				scoreForNextLvl = 10 * typeFishs[0].lvl;
+				shark.width += parseInt(shark.width / 3);
+				shark.height += parseInt(shark.height / 3);
+			}
+		}
+		else{
+			clearInterval(live);
+			shark.destroy();
+			fishs.forEach(removeFishs);
+			alert("Game Over! You score: " + score);
+			location.reload();
+		}
+
+		scoreText.setText('Score: '+score);
+	}
+	function removeFishs(fish) {
+		fish.destroy();
+	}
+	function createFishs() {
+		//timer = new Phaser.Timer
+		fishs = game.add.group();
+		game.physics.enable(fishs, Phaser.Physics.ARCADE, false);
+		live = setInterval(function(){
+			let maxY = game.world.height - floor.height - (shark.height / 2);
+			let minY = (shark.height / 2);
+			let y = Math.random() * (maxY - minY) + minY;
+
+			let outWorldDistance = 150;
+			let direction = Math.random() > 0.5 ? -1 : 1;
+			let x = direction > 0 ? (-1 * outWorldDistance) : (outWorldDistance + game.world.width);
+
+			let randomFishIndex = parseInt(Math.random() * (typeFishs.length - 1) + 1);
+			let randomFish = typeFishs[randomFishIndex];
+
+
+			let fish = game.add.sprite(x, y, randomFish.name);
+			fish.numFish = randomFishIndex;
+			fish.width = randomFish.width;
+			fish.height = randomFish.height;
+			if(direction < 0)
+				fish.scale.x *= -1;
+			game.physics.enable(fish, Phaser.Physics.ARCADE, false);
+			fish.body.velocity.set(direction * randomFish.speed, 0);
+			fish.checkWorldBounds = true;
+
+			fishs.addChild(fish);
+
+			fish.events.onOutOfBounds.add(function(fish){
+				if(
+					((direction > 0) && (fish.x > 0))
+					||
+					((direction < 0) && (fish.x < 0))
+				)
+					fish.destroy();
+			}, this);
+
+		}, 500);
+
+	}
+	// function createKillers() {
+	// 	let createKiller1 = bindKiller[typeKillers[0]];
+	// 	let createKiller2 = bindKiller[typeKillers[1]];
+	// 	killers = game.add.group();
+	// 	game.physics.enable(killers, Phaser.Physics.ARCADE, false);
+	// 	killersTime1 = setInterval(createKiller1, 2500);
+	// 	killersTime2 = setInterval(createKiller2, 5000);
+	// }
+	// function bindKiller(killer) {
+	// 	return function () {
+	// 		let maxY = game.world.height - floor.height - (shark.height / 2);
+	// 		let minY = (shark.height / 2);
+	// 		let y = Math.random() * (maxY - minY) + minY;
+	//
+	// 		let outWorldDistance = 150;
+	// 		let direction = Math.random() > 0.5 ? -1 : 1;
+	// 		let x = direction > 0 ? (-1 * outWorldDistance) : (outWorldDistance + game.world.width);
+	//
+	// 		let killer = game.add.sprite(x, y, killer.name);
+	// 		killer.width = killer.width;
+	// 		killer.height = killer.height;
+	// 		if (direction < 0)
+	// 			killer.scale.x *= -1;
+	// 		game.physics.enable(killer, Phaser.Physics.ARCADE, false);
+	// 		killer.body.velocity.set(direction * killer.speed, 0);
+	// 		killer.checkWorldBounds = true;
+	//
+	// 		killers.addChild(killer);
+	//
+	// 		killer.events.onOutOfBounds.add(function (killer) {
+	// 			if (
+	// 					((direction > 0) && (killer.x > 0))
+	// 					||
+	// 					((direction < 0) && (killer.x < 0))
+	// 			)
+	// 				killer.destroy();
+	// 		}, this);
+	// 	}
+	// }
+	function createShark(){
+		shark = game.add.sprite(0, 0, 'shark');
+		shark.width = typeFishs[0].width;
+		shark.height = typeFishs[0].height;
+		shark.x = (game.world.width - shark.width) / 2;
+		shark.y = game.world.height - floor.height - (shark.height / 2);
+		shark.anchor.set(0.5, 0.5);
+		shark.inputEnabled = true;
+		shark.input.enableDrag(true);
+		shark.input.boundsRect = new Phaser.Rectangle(0, 0, game.world.width, game.world.height - floor.height);
+
+		game.physics.enable(shark, Phaser.Physics.ARCADE, false);
+		shark.body.immovable = true;
+	}
+	function createMap(){
+		sea = game.add.sprite(0, 0, 'sea');
+		floor = game.add.sprite(0, 0, 'floor');
+		floor.y = game.world.height - floor.height;
+	}
+
+	function movingSharkDirection(){
+		let startX = shark.x;
+		shark.events.onDragUpdate.add((shark, pointer, newX) => {
+			if(newX < Math.abs(shark.width / 2))
+				shark.x = Math.abs(shark.width / 2);
+			if(newX < startX)
+				shark.scale.x = -1 * Math.abs(shark.scale.x);
+			if(newX > startX)
+				shark.scale.x = Math.abs(shark.scale.x);
+			startX = newX;
+		}, this);
+	}
+</script>
 </body>
 </html>
