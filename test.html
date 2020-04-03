@@ -51,12 +51,12 @@
             this.scale.pageAlignVertically = true;
             this.stage.backgroundColor = '#3ba0ee';
 
-            this.load.physics('sprite-physics', 'https://andreyspoki4.github.io/img/sprite_physics.json');
-            this.load.spritesheet('gamepad', 'img/gamepad/gamepad_spritesheet.png', 100, 100);
+            this.load.physics('sprite-physics', 'https://andreyspoki4.github.io/assets/sprite_physics.json');
+            this.load.spritesheet('gamepad', 'assets/gamepad/gamepad_spritesheet.png', 100, 100);
 
             for(let key in this.sprites)
                 this.load.image(key, this.sprites[key]);
-            
+
         },
 
         create() {
