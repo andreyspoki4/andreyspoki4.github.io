@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Gamedev Phaser</title>
+    <style>* { padding: 0; margin: 0; }</style>
+    <script src="js/phaser.min.js"></script>
+    <script src="js/phaser-plugin-virtual-gamepad.js"></script>
+</head>
+<body>
+<script>
+    var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'Shark life :)');
+
+    var PhaserGame = function () {
+        this.sea;
+        this.floor;
+        this.shark;
+        this.sprites = {
+            sea     : 'assets/sea.png',
+            floor   : 'assets/floor.png',
+            shark   : 'assets/shark.png',
+            fishLvl1: 'assets/fish_lvl_1.png',
+            fishLvl2: 'assets/fish_lvl_2.png',
+            fishLvl3: 'assets/fish_lvl_3.png',
+            fishLvl4: 'assets/fish_lvl_4.png',
+            fishLvl5: 'assets/fish_lvl_5.png',
+            fishLvl6: 'assets/fish_lvl_6.png',
+            killer1 : 'assets/killer_1.png',
+            killer2 : 'assets/killer_2.png'
+        };
+        this.sharkSettings = {
+            1:{ width: 60, height: 22.2, polygonScale: 0.12, polygonName: ''},
+            2:{ width: 80, height: 29.6, polygonScale: 0.155, polygonName: ''},
+            3:{ width: 107, height: 39.5, polygonScale: 0.207, polygonName: ''},
+            4:{ width: 143, height: 52.9, polygonScale: 0.28, polygonName: ''},
+            5:{ width: 191, height: 70.7, polygonScale: 0.374, polygonName: ''},
+            6:{ width: 238.8, height: 88.3, polygonScale: 0.467, polygonName: ''},
+        };
+
+    };
+
+    PhaserGame.prototype = {
+
+        init() {
+            this.physics.startSystem(Phaser.Physics.P2JS);
+        },
+
+        preload() {
+            this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+            this.scale.pageAlignHorizontally = true;
+            this.scale.pageAlignVertically = true;
+            this.stage.backgroundColor = '#3ba0ee';
+
+            this.load.physics('sprite-physics', 'https://andreyspoki4.github.io/img/sprite_physics.json');
+            this.load.spritesheet('gamepad', 'img/gamepad/gamepad_spritesheet.png', 100, 100);
+
+            for(let key in this.sprites)
+                this.load.image(key, this.sprites[key]);
+            
+        },
+
+        create() {
+            this.preparePolygons();
+            this.createMap();
+            this.createShark();
+            this.createController();
+            this.shark.width = this.sharkSettings[6].width;
+            this.shark.height = this.sharkSettings[6].height;
+            this.shark.body.clearShapes();
+            this.shark.body.loadPolygon(this.sharkSettings[6].polygonName, 'shark');
+
+        },
+        createMap() {
+            this.sea = this.add.sprite(0, 0, 'sea');
+            this.floor = this.add.sprite(0, 0, 'floor');
+
+            this.floor.y = this.world.height - this.floor.height;
+
+            this.physics.p2.enable(this.floor);
+            this.floor.body.static = true;
+            this.floor.anchor.setTo(0, 0);
+        },
+        createShark(){
+            this.shark = this.add.sprite(0, 0, 'shark');
+            this.shark.x = (this.world.width - this.shark.width) / 2;
+            this.shark.y = this.world.height - this.floor.height - (this.shark.height / 2);
+
+            this.physics.p2.enable(this.shark, true);
+            this.shark.body.clearShapes();
+            this.shark.body.loadPolygon('sprite-physics', 'shark');
+            this.shark.body.collideWorldBounds = true;
+        },
+        resizePolygon(originalPhysicsKey, newPhysicsKey, shapeKey, scale){
+            let newData = [];
+            let data = this.cache.getPhysicsData(originalPhysicsKey, shapeKey);
+            for (let i = 0; i < data.length; i++) {
+                let vertices = [];
+                for (let j = 0; j < data[i].shape.length; j += 2) {
+                    vertices[j] = data[i].shape[j] * scale;
+                    vertices[j+1] = data[i].shape[j+1] * scale;
+                }
+                newData.push({shape : vertices});
+            }
+            let item = {};
+            item[shapeKey] = newData;
+            this.load.physics(newPhysicsKey, '', item);;
+        },
+        preparePolygons(){
+            for(let lvlKey in this.sharkSettings){
+                let polygonName = `sharkLvl${lvlKey}`;
+                this.resizePolygon('sprite-physics', polygonName, 'shark', this.sharkSettings[lvlKey].polygonScale)
+                this.sharkSettings[lvlKey].polygonName = polygonName;
+            }
+        },
+        createController(){
+            this.gamepad = this.game.plugins.add(Phaser.Plugin.VirtualGamepad);
+            this.joystick = this.gamepad.addJoystick(this.world.width - 100, this.world.height - 100, 1, 'gamepad');
+        },
+        update() {
+           this.sharkMoving();
+        },
+        sharkMoving() {
+            let maxSpeed = 3;
+            if (this.joystick.properties.inUse)
+            {
+                let speed = this.joystick.properties.distance * maxSpeed;
+                this.shark.body.angle = this.joystick.properties.angle;
+                this.shark.body.moveRight(Math.cos(this.joystick.properties.rotation) * speed);
+                this.shark.body.moveDown(Math.sin(this.joystick.properties.rotation) * speed);
+            }
+            else {
+                this.shark.body.setZeroRotation();
+                this.shark.body.setZeroVelocity();
+            }
+        }
+
+
+    };
+    game.state.add('Game', PhaserGame, true);
+    //   let s1 = this.add.sprite(10, 10, 'shark');
+    //   this.physics.p2.enable(s1, true);
+    //   s1.width = 107; s1.height = 39.5;
+    //   this.resizePolygon('sprite-physics','sprite-physics2', 'shark', 0.207)
+    //   s1.body.clearShapes();
+    //   s1.body.loadPolygon('sprite-physics2', 'shark');
+
+    // let f1 = this.add.sprite(10, 10, 'f1');
+    // this.physics.p2.enable(f1, true);
+    // f1.body.clearShapes();
+    // f1.body.loadPolygon('sprite-physics', 'fish_lvl_1');
+    //
+    // let f2 = this.add.sprite(10, 45, 'f2');
+    // this.physics.p2.enable(f2, true);
+    // f2.body.clearShapes();
+    // f2.body.loadPolygon('sprite-physics', 'fish_lvl_2');
+    //
+    // let f3 = this.add.sprite(10, 85, 'f3');
+    // this.physics.p2.enable(f3, true);
+    // f3.body.clearShapes();
+    // f3.body.loadPolygon('sprite-physics', 'fish_lvl_3');
+    //
+    // let f4 = this.add.sprite(10, 135, 'f4');
+    // this.physics.p2.enable(f4, true);
+    // f4.body.clearShapes();
+    // f4.body.loadPolygon('sprite-physics', 'fish_lvl_4');
+    //
+    // let f5 = this.add.sprite(10, 195, 'f5');
+    // this.physics.p2.enable(f5, true);
+    // f5.body.clearShapes();
+    // f5.body.loadPolygon('sprite-physics', 'fish_lvl_5');
+    //
+    // let f6 = this.add.sprite(10, 280, 'f6');
+    // this.physics.p2.enable(f6, true);
+    // f6.body.clearShapes();
+    // f6.body.loadPolygon('sprite-physics', 'fish_lvl_6');
+    //
+    // let k1 = this.add.sprite(10, 360, 'k1');
+    // this.physics.p2.enable(k1, true);
+    // k1.body.clearShapes();
+    // k1.body.loadPolygon('sprite-physics', 'killer_1');
+    //
+    // let k2 = this.add.sprite(10, 450, 'k2');
+    // this.physics.p2.enable(k2, true);
+    // k2.body.clearShapes();
+    // k2.body.loadPolygon('sprite-physics', 'killer_2');
+
+    //   this.resizePolygon('sprite-physics','sprite-physics3', 'shark', 0.155);
+    //   s1.width = 80; s1.height = 29.6;
+    //   s1.body.clearShapes();
+    //   s1.body.loadPolygon('sprite-physics3', 'shark');
+    //   this.resizePolygon('sprite-physics','sprite-physics4', 'shark', 0.12)
+    //   s1.width = 60; s1.height = 22.2;
+    //   s1.body.clearShapes();
+    //   s1.body.loadPolygon('sprite-physics4', 'shark');
+    // let s2 = this.add.sprite(10, 45, 'shark');
+    // this.physics.p2.enable(s2, true);
+    // s2.width = 80; s2.height = 29.6;
+    // s2.body.clearShapes();
+    // s2.body.loadPolygon('sprite-physics3', 'shark');
+    // let f2 = this.add.sprite(10 + s2.width + 5, 45, 'f2');
+    //f2.width = 80; f2.height = 29.6;
+    // this.resizePolygon('sprite-physics','sprite-physics4', 'shark', 0.207)
+    // let s3 = this.add.sprite(10, 85, 'shark');
+    // this.physics.p2.enable(s3, true);
+    // s3.width = 107; s3.height = 39.5;
+    // s3.body.clearShapes();
+    // s3.body.loadPolygon('sprite-physics4', 'shark');
+    // let f3 = this.add.sprite(10 + s3.width + 5, 85, 'f3');
+    //f3.width = 107; f3.height = 39.5;
+
+    // let s4 = this.add.sprite(10, 135, 'shark');
+    // s4.width = 143; s4.height = 52.9;
+    // let f4 = this.add.sprite(10 + s4.width + 5, 135, 'f4');
+    // f4.width = 143; f4.height = 52.9;
+
+    // let s5 = this.add.sprite(10, 195, 'shark');
+    // s5.width = 191; s5.height = 70.7;
+    // let f5 = this.add.sprite(10 + s5.width + 5, 195, 'f5');
+    //f5.width = 191; f5.height = 70.7;
+
+    // let s6 = this.add.sprite(10, 280, 'shark');
+    // s6.width = 238.8; s6.height = 88.3;
+    // let f6 = this.add.sprite(10 + s6.width + 5, 280, 'f6');
+    //f6.width = 238.8; f6.height = 88.3;
+
+    // let k1 = this.add.sprite(10, 360, 'k1');
+    //k1.width = 55; k1.height = 50;
+
+    // let k2 = this.add.sprite(10, 450, 'k2');
+    //k2.width = 238.8; k2.height = 88.3;
+    // this.resizePolygon('sprite-physics','sprite-physics2', 'shark', 0.207)
+    //
+    // this.shark.body.clearShapes();
+    // this.shark.width = 107; this.shark.height = 39.5;
+    // this.shark.body.loadPolygon('sprite-physics2', 'shark');
+</script>
+</body>
+</html>
