@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8" />
-	<title>Gamedev Phaser</title>
+	<title>Shark Life :)</title>
 	<style>* { padding: 0; margin: 0; }</style>
 	<script src="js/phaser.min.js"></script>
 </head>
@@ -69,26 +69,6 @@
 		//movingSharkDirection();
 		qq = game.cache.getPhysicsData('sprite-physics');
 
-
-
-		// shark.body.removeFromWorld()
-		//resize_polygon('shark', 0.5)
-		//shark.body.loadPolygon('shark', 'shark');
-		//shark.setPolygon(qq["shark"]);
-		// shark.body.removeShape('shark');
-		// shark.body.loadPolygon(null, qq["shark"]);
-		// shark.body.shapeChanged()
-		// shark.body.addToWorld()
-		// resize_polygon('shark', -1)
-		// shark.body.loadPolygon(null, qq["shark"]);
-		//shark.body.reverse(1000)
-		//shark.body.moveDown(1000)
-		//resize_polygon(0.5);
-		//timer = game.add.sprite(300, 300, '6');
-		//scoreText = game.add.text(5, game.world.height - 25, 'Score: 0', { font: '18px Arial', fill: '#0095DD' });
-
-		//createFishs();
-
 	}
 	function update() {
 		//game.physics.arcade.collision(shark, timer);
@@ -109,16 +89,22 @@
 		}
 		else{
 			clearInterval(live);
-			shark.destroy();
+			shark.inputEnabled = false;
 			fishs.forEach(removeFishs);
-			alert("Game Over! You score: " + score);
-			location.reload();
+			shark.destroy();
+			alert("Game Over! You score: " + score)
+			score = 0;
+			createShark();
+			movingSharkDirection();
+			createFishs();
+
+
 		}
 
 		scoreText.setText('Score: '+score);
 	}
 	function removeFishs(fish) {
-		fish.destroy();
+		fish.kill();
 	}
 	function createFishs() {
 		//timer = new Phaser.Timer
