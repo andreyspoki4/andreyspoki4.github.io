@@ -8,6 +8,7 @@
 </head>
 <body>
 <script>
+
 	let typeFishs = [
 		{name: 'shark', img: 'img/shark.png', lvl: 1, width: 60, height: 20},
 		{name: 'fish-lvl-1', img: 'img/1.png', lvl: 1, width: 45, height: 15, pointsByKill: 1, speed: 150},
@@ -28,9 +29,10 @@
 	let scoreForNextLvl = 10;
 	let lvl = 1;
 	let timer;
-	let sea, floor;
-	let fishs, killers, shark;
 
+	let pad, stick;
+	let fishs, killers, shark;
+	let sea, floor;
 	let game = new Phaser.Game({
 		renderer: Phaser.CANVAS,
 		width: 800,
@@ -48,30 +50,29 @@
 		game.scale.pageAlignVertically = true;
 		game.stage.backgroundColor = '#3ba0ee';
 
-		game.load.image('sea', 'img/sea_dark.png');
-		game.load.image('floor', 'img/sand_floor.png');
-		for(let fish of typeFishs)
-			game.load.image(fish.name, fish.img);
+		game.load.image('sea', 'img/sea.png');
+		game.load.image('floor', 'img/floor.png');
+		game.load.image('shark', 'img/shark.png');
+		//this.game.load.image("6", "img/6.png");
+		game.load.physics('sprite-physics', 'https://andreyspoki4.github.io//img/sprite-physics.json');
+		// for(let fish of typeFishs)
+		// 	game.load.image(fish.name, fish.img);
 
 
 
 	}
 	function create() {
-		game.physics.startSystem(Phaser.Physics.ARCADE);
-
+		this.game.state.start("Main");
+		game.physics.startSystem(Phaser.Physics.P2JS);
 		createMap();
-
 		createShark();
-		movingSharkDirection();
-
-		scoreText = game.add.text(5, game.world.height - 25, 'Score: 0', { font: '18px Arial', fill: '#0095DD' });
-
-		createFishs();
-		//createKillers();
+		//movingSharkDirection();
+		qq = game.cache.getPhysicsData('sprite-physics');
 
 	}
 	function update() {
-		game.physics.arcade.collide(shark, fishs.children, eat);
+		//game.physics.arcade.collision(shark, timer);
+		// game.physics.arcade.collide(shark, fishs.children, eat);
 	}
 	function eat(shark, fish) {
 		let fishInfo = typeFishs[fish.numFish];
@@ -187,8 +188,8 @@
 	// }
 	function createShark(){
 		shark = game.add.sprite(0, 0, 'shark');
-		shark.width = typeFishs[0].width;
-		shark.height = typeFishs[0].height;
+		// shark.width = typeFishs[0].width;
+		// shark.height = typeFishs[0].height;
 		shark.x = (game.world.width - shark.width) / 2;
 		shark.y = game.world.height - floor.height - (shark.height / 2);
 		shark.anchor.set(0.5, 0.5);
@@ -196,13 +197,20 @@
 		shark.input.enableDrag(true);
 		shark.input.boundsRect = new Phaser.Rectangle(0, 0, game.world.width, game.world.height - floor.height);
 
-		game.physics.enable(shark, Phaser.Physics.ARCADE, false);
-		shark.body.immovable = true;
+		game.physics.p2.enable(shark, true);
+		shark.body.clearShapes();
+		shark.body.loadPolygon('sprite-physics', 'shark');
+		shark.body.static = true;
+
+		game.physics.p2.moveToPointer(shark, 400);
 	}
 	function createMap(){
 		sea = game.add.sprite(0, 0, 'sea');
 		floor = game.add.sprite(0, 0, 'floor');
 		floor.y = game.world.height - floor.height;
+		game.physics.p2.enable(floor);
+		floor.body.static = true;
+		floor.anchor.setTo(0, 0);
 	}
 
 	function movingSharkDirection(){
