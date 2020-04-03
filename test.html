@@ -9,7 +9,7 @@
 </head>
 <body>
 <script>
-    var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'Shark life :)');
+    var game = new Phaser.Game(window.screen.availWidth, window.screen.availHeight, Phaser.AUTO, 'Shark life :)');
 
     var PhaserGame = function () {
         this.sea;
@@ -58,8 +58,8 @@
                 this.load.image(key, this.sprites[key]);
 
         },
-
         create() {
+            //this.gofull();
             this.preparePolygons();
             this.createMap();
             this.createShark();
@@ -72,8 +72,12 @@
         },
         createMap() {
             this.sea = this.add.sprite(0, 0, 'sea');
-            this.floor = this.add.sprite(0, 0, 'floor');
+            this.sea.width = this.world.width;
+            this.sea.height = this.world.height;
 
+            this.floor = this.add.sprite(0, 0, 'floor');
+            this.floor.width = this.world.width;
+            this.floor.height = this.floor.height * 2;
             this.floor.y = this.world.height - this.floor.height;
 
             this.physics.p2.enable(this.floor);
@@ -114,7 +118,7 @@
         },
         createController(){
             this.gamepad = this.game.plugins.add(Phaser.Plugin.VirtualGamepad);
-            this.joystick = this.gamepad.addJoystick(this.world.width - 100, this.world.height - 100, 1, 'gamepad');
+            this.joystick = this.gamepad.addJoystick(this.world.width - (this.world.width / 4), this.world.height - (this.world.height / 4), 1, 'gamepad');
         },
         update() {
            this.sharkMoving();
