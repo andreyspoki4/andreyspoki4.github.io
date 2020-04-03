@@ -10,24 +10,25 @@
 </head>
 <body>
 <script>
-    var game = new Phaser.Game(window.screen.availWidth, window.screen.availHeight, Phaser.CANVAS, 'Shark life :)');
+    var game = new Phaser.Game('100%', '100%', Phaser.CANVAS, 'Shark life :)');
 
     var PhaserGame = function () {
         this.sea;
         this.floor;
         this.shark;
+        this.fishs;
         this.sprites = {
             sea     : 'assets/sea.png',
             floor   : 'assets/floor.png',
             shark   : 'assets/shark.png',
-            fishLvl1: 'assets/fish_lvl_1.png',
-            fishLvl2: 'assets/fish_lvl_2.png',
-            fishLvl3: 'assets/fish_lvl_3.png',
-            fishLvl4: 'assets/fish_lvl_4.png',
-            fishLvl5: 'assets/fish_lvl_5.png',
-            fishLvl6: 'assets/fish_lvl_6.png',
-            killer1 : 'assets/killer_1.png',
-            killer2 : 'assets/killer_2.png'
+            fish_lvl_1: 'assets/fish_lvl_1.png',
+            fish_lvl_2: 'assets/fish_lvl_2.png',
+            fish_lvl_3: 'assets/fish_lvl_3.png',
+            fish_lvl_4: 'assets/fish_lvl_4.png',
+            fish_lvl_5: 'assets/fish_lvl_5.png',
+            fish_lvl_6: 'assets/fish_lvl_6.png',
+            killer_1 : 'assets/killer_1.png',
+            killer_2 : 'assets/killer_2.png'
         };
         this.sharkSettings = {
             1:{ width: 60, height: 22.2, polygonScale: 0.12, polygonName: ''},
@@ -36,6 +37,15 @@
             4:{ width: 143, height: 52.9, polygonScale: 0.28, polygonName: ''},
             5:{ width: 191, height: 70.7, polygonScale: 0.374, polygonName: ''},
             6:{ width: 238.8, height: 88.3, polygonScale: 0.467, polygonName: ''},
+        };
+        this.fishsSetting = {
+            1:{ sprite: 'fish_lvl_1', lvl: 1, points: 1, speed: 40},
+            2:{ sprite: 'fish_lvl_2', lvl: 2, points: 2, speed: 40},
+            3:{ sprite: 'fish_lvl_3', lvl: 3, points: 3, speed: 40},
+            4:{ sprite: 'fish_lvl_4', lvl: 4, points: 4, speed: 40},
+            5:{ sprite: 'fish_lvl_5', lvl: 5, points: 5, speed: 40},
+            6:{ sprite: 'fish_lvl_6', lvl: 6, points: 6, speed: 40},
+            length: 6
         };
 
     };
@@ -60,21 +70,20 @@
 
         },
         create() {
-            //this.gofull();
+            //this.initFullScreen();
             this.preparePolygons();
             this.createMap();
             this.createShark();
             this.createController();
-            this.shark.width = this.sharkSettings[6].width;
-            this.shark.height = this.sharkSettings[6].height;
-            this.shark.body.clearShapes();
-            this.shark.body.loadPolygon(this.sharkSettings[6].polygonName, 'shark');
 
-            this.input.onDown.add(this.gofull, this);
+            this.fishs = this.add.group();
+            this.physics.p2.enable(this.fishs, true);
 
+            this.time.events.repeat(Phaser.Timer.SECOND * 3, 10, this.createFish, this);
         },
-        gofull() {
-                this.scale.startFullScreen(false);
+        initFullScreen() {
+            this.scale.startFullScreen(false);
+            this.scale.setGameSize(window.screen.availWidth, window.screen.availHeight);
         },
         createMap() {
             this.sea = this.add.sprite(0, 0, 'sea');
@@ -83,7 +92,6 @@
 
             this.floor = this.add.sprite(0, 0, 'floor');
             this.floor.width = this.world.width;
-            this.floor.height = this.floor.height * 2;
             this.floor.y = this.world.height - this.floor.height;
 
             this.physics.p2.enable(this.floor);
@@ -96,9 +104,56 @@
             this.shark.y = this.world.height - this.floor.height - (this.shark.height / 2);
 
             this.physics.p2.enable(this.shark, true);
-            this.shark.body.clearShapes();
-            this.shark.body.loadPolygon('sprite-physics', 'shark');
             this.shark.body.collideWorldBounds = true;
+            this.setSharkLvl(1);
+
+        },
+        createFish(){
+            let randomFishIndex = (parseInt(Math.random() * 1000) % this.fishsSetting.length) + 1;
+            let randomFish = this.fishsSetting[randomFishIndex];
+            let fish = this.add.sprite(0, 0, randomFish.sprite);
+
+            let maxY = this.world.height - this.floor.height - (fish.height / 2);
+            let minY = (fish.height / 2);
+            let y = Math.random() * (maxY - minY) + minY;
+
+            let outWorldDistance = 250;
+            let direction = Math.random() > 0.5 ? -1 : 1;
+            direction = 1;
+            let x = direction > 0 ? (-1 * outWorldDistance) : (outWorldDistance + this.world.width);
+
+            fish.x = x;
+            fish.y = y;
+            fish.lvl = randomFish.lvl;
+
+
+            this.physics.p2.enable(fish, true);
+            fish.body.static = true;
+            fish.body.clearShapes();
+            fish.body.loadPolygon('sprite-physics', randomFish.sprite);
+            // if(direction < 0){
+            //     fish.body.rotateLeft();
+            //     fish.body.reverse();
+            // }
+            fish.body.velocity.x = direction * randomFish.speed;
+            fish.checkWorldBounds = true;
+
+            this.fishs.addChild(fish);
+
+            fish.events.onOutOfBounds.add(function(fish){
+                if(
+                    ((direction > 0) && (fish.x > 0))
+                    ||
+                    ((direction < 0) && (fish.x < 0))
+                )
+                    fish.destroy();
+            }, this);
+        },
+        setSharkLvl(lvl){
+            this.shark.width = this.sharkSettings[lvl].width;
+            this.shark.height = this.sharkSettings[lvl].height;
+            this.shark.body.clearShapes();
+            this.shark.body.loadPolygon(this.sharkSettings[lvl].polygonName, 'shark');
         },
         resizePolygon(originalPhysicsKey, newPhysicsKey, shapeKey, scale){
             let newData = [];
