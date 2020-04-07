@@ -225,6 +225,34 @@
 			startX = newX;
 		}, this);
 	}
+
+	layer.update = function () {
+		player.body.velocity.x = 0; //default speed - stationary
+	    if ( game.input.keyboard.isDown( controls.left ) ) {
+	    player.scale.x = -1;
+	    player.body.moveLeft( sideSpeed );
+	    player.body.clearShapes();
+	    player.body.loadPolygon('physicsLeftData', 'player');
+	    setBody();
+	    }
+	    else if ( game.input.keyboard.isDown( controls.right ) ) {
+	    player.scale.x = 1;
+	    player.body.clearShapes();
+	    player.body.loadPolygon('physicsData', 'player');
+	    console.log( player.body );
+	    player.body.moveRight( sideSpeed );
+	    setBody()
+	    }
+	    if ( game.input.keyboard.isDown( controls.jump ) && checkIfCanJump() && this.game.time.now > player.jumpTimer ) {
+	    player.body.moveUp( jumpSpeed ) ;
+	    player.jumpTimer = this.game.time.now + 0;
+	    }
+	    };function setBody() {
+	    player.body.fixedRotation = true;
+	    player.body.setCollisionGroup( collisionGroup );
+	    player.body.setMaterial( material );
+	    player.body.collideWorldBounds = true;
+	    player.body.mass = 4; }
 </script>
 </body>
 </html>
