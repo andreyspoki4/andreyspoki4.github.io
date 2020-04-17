@@ -1,258 +1,303 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8" />
-	<title>Shark Life :)</title>
-	<style>* { padding: 0; margin: 0; }</style>
-	<script src="js/phaser.min.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
+    <title>Shark Life :)</title>
+    <style>* { padding: 0; margin: 0; }</style>
+    <script src="js/phaser.min.js"></script>
+    <script src="js/phaser-plugin-virtual-gamepad.js"></script>
 </head>
 <body>
 <script>
+    var game = new Phaser.Game('100%', '100%', Phaser.CANVAS, 'Shark life :)');
 
-	let typeFishs = [
-		{name: 'shark', img: 'img/shark.png', lvl: 1, width: 60, height: 20},
-		{name: 'fish-lvl-1', img: 'img/1.png', lvl: 1, width: 45, height: 15, pointsByKill: 1, speed: 150},
-		{name: 'fish-lvl-2', img: 'img/2.png', lvl: 2, width: 75, height: 25, pointsByKill: 2, speed: 170},
-		{name: 'fish-lvl-3', img: 'img/3.png', lvl: 3, width: 105, height: 35, pointsByKill: 3, speed: 180},
-		{name: 'fish-lvl-4', img: 'img/4.png', lvl: 4, width: 120, height: 40, pointsByKill: 4, speed: 200},
-		{name: 'fish-lvl-5', img: 'img/5.png', lvl: 5, width: 150, height: 50, pointsByKill: 5, speed: 220},
-		{name: 'fish-lvl-6', img: 'img/6.png', lvl: 6, width: 175, height: 65, pointsByKill: 6, speed: 230},
-		{name: 'killer-1', img: 'img/killer1.png', lvl: 9999, width: 80, height: 80, pointsByKill: 100, speed: 70},
-		{name: 'killer-5', img: 'img/killer2.png', lvl: 9999, width: 150, height: 50, pointsByKill: 100, speed: 450}
-	];
-	let typeKillers = [
+    var PhaserGame = function () {
+        this.sea;
+        this.floor;
+        this.shark;
+        this.fishs;
+        this.sharkCollisionGroup;
+        this.fishsCollisionGroup;
+        this.scoreText;
+        this.bestScoreText;
+        this.score = 0;
+        this.scoreForNextLvl = 10;
+        this.lvl = 1;
+        this.sprites = {
+            sea     : 'assets/map/sea.png',
+            floor   : 'assets/map/floor.png',
+            shark   : 'assets/fishs/shark.png',
+            r_fish_lvl_1: 'assets/fishs/r_fish_lvl_1.png',
+            l_fish_lvl_1: 'assets/fishs/l_fish_lvl_1.png',
+            r_fish_lvl_2: 'assets/fishs/r_fish_lvl_2.png',
+            l_fish_lvl_2: 'assets/fishs/l_fish_lvl_2.png',
+            r_fish_lvl_3: 'assets/fishs/r_fish_lvl_3.png',
+            l_fish_lvl_3: 'assets/fishs/l_fish_lvl_3.png',
+            r_fish_lvl_4: 'assets/fishs/r_fish_lvl_4.png',
+            l_fish_lvl_4: 'assets/fishs/l_fish_lvl_4.png',
+            r_fish_lvl_5: 'assets/fishs/r_fish_lvl_5.png',
+            l_fish_lvl_5: 'assets/fishs/l_fish_lvl_5.png',
+            r_fish_lvl_6: 'assets/fishs/r_fish_lvl_6.png',
+            l_fish_lvl_6: 'assets/fishs/l_fish_lvl_6.png',
+            r_killer_1 : 'assets/fishs/r_killer_1.png',
+            l_killer_1 : 'assets/fishs/l_killer_1.png',
+            r_killer_2 : 'assets/fishs/r_killer_2.png',
+            l_killer_2 : 'assets/fishs/l_killer_2.png'
+        };
+        this.sharkSettings = {
+            1:{ width: 60, height: 22.2, polygonScale: 0.12, polygonName: ''},
+            2:{ width: 80, height: 29.6, polygonScale: 0.155, polygonName: ''},
+            3:{ width: 107, height: 39.5, polygonScale: 0.207, polygonName: ''},
+            4:{ width: 143, height: 52.9, polygonScale: 0.28, polygonName: ''},
+            5:{ width: 191, height: 70.7, polygonScale: 0.374, polygonName: ''},
+            6:{ width: 238.8, height: 88.3, polygonScale: 0.467, polygonName: ''},
+        };
+        this.fishsSetting = {
+            1:{ sprite: { l: 'l_fish_lvl_1', r: 'r_fish_lvl_1'}, lvl: 1, points: 1, speed: 140},
+            2:{ sprite: { l: 'l_fish_lvl_2', r: 'r_fish_lvl_2'}, lvl: 2, points: 2, speed: 140},
+            3:{ sprite: { l: 'l_fish_lvl_3', r: 'r_fish_lvl_3'}, lvl: 3, points: 3, speed: 140},
+            4:{ sprite: { l: 'l_fish_lvl_4', r: 'r_fish_lvl_4'}, lvl: 4, points: 4, speed: 140},
+            5:{ sprite: { l: 'l_fish_lvl_5', r: 'r_fish_lvl_5'}, lvl: 5, points: 5, speed: 140},
+            6:{ sprite: { l: 'l_fish_lvl_6', r: 'r_fish_lvl_6'}, lvl: 6, points: 6, speed: 140},
+			7:{ sprite: { l: 'l_killer_1', r: 'r_killer_1'}, lvl: 7, points: 0, speed: 70},
+			8:{ sprite: { l: 'l_killer_2', r: 'r_killer_2'}, lvl: 7, points: 0, speed: 260},
+            length: 6
+        };
 
-	];
-	let live, killersTime1, killersTime2;
-	let scoreText;
-	let score = 0
-	let scoreForNextLvl = 10;
-	let lvl = 1;
-	let timer;
+    };
 
-	let pad, stick;
-	let fishs, killers, shark;
-	let sea, floor;
-	let game = new Phaser.Game({
-		renderer: Phaser.CANVAS,
-		width: 800,
-		height: 600,
-		state: {
-			preload: preload,
-			create: create,
-			update: update
-		}
-	});
+    PhaserGame.prototype = {
 
-	function preload() {
-		game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-		game.scale.pageAlignHorizontally = true;
-		game.scale.pageAlignVertically = true;
-		game.stage.backgroundColor = '#3ba0ee';
+        init() {
+            this.physics.startSystem(Phaser.Physics.P2JS);
+            this.physics.p2.setImpactEvents(true);
+        },
 
-		game.load.image('sea', 'img/sea.png');
-		game.load.image('floor', 'img/floor.png');
-		game.load.image('shark', 'img/shark.png');
-		//this.game.load.image("6", "img/6.png");
-		game.load.physics('sprite-physics', 'https://andreyspoki4.github.io//img/sprite-physics.json');
-		// for(let fish of typeFishs)
-		// 	game.load.image(fish.name, fish.img);
+        preload() {
+            this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+            this.scale.pageAlignHorizontally = true;
+            this.scale.pageAlignVertically = true;
+            this.stage.backgroundColor = '#3ba0ee';
+
+            this.load.physics('sprite-physics', 'https://andreyspoki4.github.io/assets/physics/sprite_physics.json');
+            // this.load.physics('sprite-physics', 'assets/sprite_physics.json');
+            this.load.spritesheet('gamepad', 'assets/gamepad/gamepad_spritesheet.png', 100, 100);
+
+            for(let key in this.sprites)
+                this.load.image(key, this.sprites[key]);
+
+        },
+        create() {
+			      let bestScore = localStorage.getItem('bestScore');
+            if(!bestScore) localStorage.setItem('bestScore', 0);
+            this.initFullScreen();
+            this.preparePolygons();
+            this.createMap();
+            this.createScore();
+
+            this.sharkCollisionGroup = this.physics.p2.createCollisionGroup();
+            this.fishsCollisionGroup = this.physics.p2.createCollisionGroup();;
+
+            this.createShark();
+            this.createController();
+            this.createFishs();
+
+            this.physics.p2.updateBoundsCollisionGroup();
+
+        },
+        update() {
+           this.sharkMoving();
+        },
+        initFullScreen() {
+            this.scale.startFullScreen(true);
+            //this.scale.setGameSize(window.screen.availWidth, window.screen.availHeight);
+        },
+        createMap() {
+            this.sea = this.add.sprite(0, 0, 'sea');
+            this.sea.width = this.world.width;
+            this.sea.height = this.world.height;
+
+            this.floor = this.add.sprite(0, 0, 'floor');
+            this.floor.width = this.world.width;
+            this.floor.y = this.world.height - this.floor.height;
+
+            // this.physics.p2.enable(this.floor, true);
+            this.floor.anchor.setTo(0, 0);
+            // this.floor.body.clearShapes();
+
+        },
+        createShark(){
+            this.shark = this.add.sprite(0, 0, 'shark');
+            this.shark.x = (this.world.width - this.shark.width) / 2;
+            this.shark.y = this.world.height - this.floor.height - (this.shark.height / 2);
+
+            this.physics.p2.enable(this.shark);
+            this.shark.body.collideWorldBounds = true;
+            this.setSharkLvl(1);
+        },
+        createFishs(){
+            this.fishs = this.add.group();
+            this.fishs.enableBody = true;
+            this.fishs.physicsBodyType = Phaser.Physics.P2JS;
+            this.time.events.repeat(Phaser.Timer.SECOND * 1, 10000, this.createFish, this);
+        },
+        createFish(){
+            let randomFishIndex = (parseInt(Math.random() * 1000) % this.fishsSetting.length) + 1;
+            let direction = Math.random() > 0.5 ? -1 : 1;
+            let charDirection = direction === 1 ? 'r' : 'l';
+
+            let randomFish = this.fishsSetting[randomFishIndex];
+            //let fish = this.add.sprite(0, 0, randomFish.sprite[charDirection]);
+            let fish = this.fishs.create(0, 0, randomFish.sprite[charDirection]);
+
+            let maxY = this.world.height - this.floor.height - (fish.height / 2);
+            let minY = (fish.height / 2);
+            let y = Math.random() * (maxY - minY) + minY;
+
+            let outWorldDistance = 250;
+            let x = direction > 0 ? (-1 * outWorldDistance) : (outWorldDistance + this.world.width);
+
+            fish.body.x = x;
+            fish.body.y = y;
+            fish.body.lvl = randomFish.lvl;
 
 
+            this.physics.p2.enable(fish, true);
+            fish.body.static = true;
+            fish.body.clearShapes();
+            fish.body.loadPolygon('sprite-physics', randomFish.sprite[charDirection]);
+            fish.body.setCollisionGroup(this.fishsCollisionGroup);
+            fish.body.collides([this.sharkCollisionGroup]);
+            fish.body.velocity.x = direction * randomFish.speed;
+            fish.checkWorldBounds = true;
 
-	}
-	function create() {
-		this.game.state.start("Main");
-		game.physics.startSystem(Phaser.Physics.P2JS);
-		createMap();
-		createShark();
-		//movingSharkDirection();
-		qq = game.cache.getPhysicsData('sprite-physics');
+            fish.events.onOutOfBounds.add((fish) => {
+                if(
+                    ((direction > 0) && (fish.x > 0))
+                    ||
+                    ((direction < 0) && (fish.x < 0))
+                )
+                    fish.destroy();
+            }, this);
+        },
+        setSharkLvl(lvl){
+            this.shark.width = this.sharkSettings[lvl].width;
+            this.shark.height = this.sharkSettings[lvl].height;
+            this.shark.body.lvl = lvl;
+            this.shark.body.clearShapes();
+            this.shark.body.loadPolygon(this.sharkSettings[lvl].polygonName, 'shark');
 
-	}
-	function update() {
-		//game.physics.arcade.collision(shark, timer);
-		// game.physics.arcade.collide(shark, fishs.children, eat);
-	}
-	function eat(shark, fish) {
-		let fishInfo = typeFishs[fish.numFish];
-		if(typeFishs[0].lvl >= fishInfo.lvl){
-			score += fishInfo.pointsByKill;
-			scoreForNextLvl -= fishInfo.pointsByKill;
-			fish.destroy();
-			if(scoreForNextLvl <= 0 ){
-				typeFishs[0].lvl += 1;
-				scoreForNextLvl = 10 * typeFishs[0].lvl;
-				shark.width += parseInt(shark.width / 3);
-				shark.height += parseInt(shark.height / 3);
+            this.shark.body.setCollisionGroup(this.sharkCollisionGroup);
+            this.shark.body.collides(this.fishsCollisionGroup, this.eat, this);
+
+        },
+        resizePolygon(originalPhysicsKey, newPhysicsKey, shapeKey, scale){
+            let newData = [];
+            let data = this.cache.getPhysicsData(originalPhysicsKey, shapeKey);
+            for (let i = 0; i < data.length; i++) {
+                let vertices = [];
+                for (let j = 0; j < data[i].shape.length; j += 2) {
+                    vertices[j] = data[i].shape[j] * scale;
+                    vertices[j+1] = data[i].shape[j+1] * scale;
+                }
+                newData.push({shape : vertices});
+            }
+            let item = {};
+            item[shapeKey] = newData;
+            this.load.physics(newPhysicsKey, '', item);;
+        },
+        preparePolygons(){
+            for(let lvlKey in this.sharkSettings){
+                let polygonName = `sharkLvl${lvlKey}`;
+                this.resizePolygon('sprite-physics', polygonName, 'shark', this.sharkSettings[lvlKey].polygonScale)
+                this.sharkSettings[lvlKey].polygonName = polygonName;
+            }
+        },
+        createController(){
+            this.gamepad = this.game.plugins.add(Phaser.Plugin.VirtualGamepad);
+            this.joystick = this.gamepad.addJoystick(this.world.width - (this.world.width / 4), this.world.height - (this.world.height / 4), 1, 'gamepad');
+        },
+        createScore(){
+        	let bestScore = this.scoreText = this.add.text(5, this.world.height - 25, 'Score: 0', { font: '18px Arial', fill: '#0095DD' });
+			    this.bestScoreText = this.add.text(5, this.world.height - 25, 'Best score: ${}', { font: '18px Arial', fill: '#0095DD' });
+        },
+        updateScore(points){
+            this.score += points;
+            this.scoreForNextLvl -= points;
+            if(this.scoreForNextLvl <= 0 ){
+                if(this.shark.body.lvl < 6)
+                    this.setSharkLvl(++this.shark.body.lvl);
+                else{
+                  this.setSharkLvl(1);
+                  this.upGameLvl();
+                }
+
+                this.scoreForNextLvl = 10 * this.shark.body.lvl;
+            }
+            this.scoreText.setText(`Score: ${this.score}`);
+        },
+		upGameLvl(){
+			this.lvl += 1;
+			this.upFishsSpeed();
+			if(this.lvl == 2)
+				this.fishsSetting.length = 7;
+			else if(this.lvl == 4)
+				this.fishsSetting.length = 8;
+		},
+		upFishsSpeed(){
+        	for(let i = 1; i <= 6; i++)
+				this.fishsSetting[i].speed += 10;
+		},
+		eat(shark, fish){
+			if(fish.collisionAction)
+				return;
+			fish.collisionAction = true;
+			if(shark.lvl >= fish.lvl){
+				this.killHim(fish);
+				this.updateScore(this.fishsSetting[fish.lvl].points);
+			}else{
+				let bestScore = localStorage.getItem('bestScore');
+				if(bestScore < this.score){
+					localStorage.setItem('bestScore', this.score);
+					bestScore = this.score;
+				}
+				this.killHim(shark, 'shark');
+				alert(`Game Over! You score: ${this.score}, best score: ${bestScore}`);
+				location.reload();
 			}
-		}
-		else{
-			clearInterval(live);
-			shark.inputEnabled = false;
-			fishs.forEach(removeFishs);
-			shark.destroy();
-			alert("Game Over! You score: " + score)
-			score = 0;
-			createShark();
-			movingSharkDirection();
-			createFishs();
+		},
+		killHim(body, type = 'fish'){
+			body.sprite.kill();
+			body.removeFromWorld();
+			switch (type) {
+				case 'shark':
+					body.removeCollisionGroup(this.sharkCollisionGroup);
+					break;
+				case 'fish':
+					body.removeCollisionGroup(this.fishsCollisionGroup);
+					this.fishs.removeChild(body);
+					break;
+			}
+		},
+        sharkMoving() {
+            let maxSpeed = 3;
+            if (this.joystick.properties.inUse)
+            {
+                let speed = this.joystick.properties.distance * maxSpeed;
+                this.shark.body.angle = this.joystick.properties.angle;
+                this.shark.body.moveRight(Math.cos(this.joystick.properties.rotation) * speed);
+                this.shark.body.moveDown(Math.sin(this.joystick.properties.rotation) * speed);
+            }
+            else {
+                this.shark.body.setZeroRotation();
+                this.shark.body.setZeroVelocity();
+            }
+        }
 
+    };
+    game.state.add('Game', PhaserGame, true);
 
-		}
-
-		scoreText.setText('Score: '+score);
-	}
-	function removeFishs(fish) {
-		fish.kill();
-	}
-	function createFishs() {
-		//timer = new Phaser.Timer
-		fishs = game.add.group();
-		game.physics.enable(fishs, Phaser.Physics.ARCADE, false);
-		live = setInterval(function(){
-			let maxY = game.world.height - floor.height - (shark.height / 2);
-			let minY = (shark.height / 2);
-			let y = Math.random() * (maxY - minY) + minY;
-
-			let outWorldDistance = 150;
-			let direction = Math.random() > 0.5 ? -1 : 1;
-			let x = direction > 0 ? (-1 * outWorldDistance) : (outWorldDistance + game.world.width);
-
-			let randomFishIndex = parseInt(Math.random() * (typeFishs.length - 1) + 1);
-			let randomFish = typeFishs[randomFishIndex];
-
-
-			let fish = game.add.sprite(x, y, randomFish.name);
-			fish.numFish = randomFishIndex;
-			fish.width = randomFish.width;
-			fish.height = randomFish.height;
-			if(direction < 0)
-				fish.scale.x *= -1;
-			game.physics.enable(fish, Phaser.Physics.ARCADE, false);
-			fish.body.velocity.set(direction * randomFish.speed, 0);
-			fish.checkWorldBounds = true;
-
-			fishs.addChild(fish);
-
-			fish.events.onOutOfBounds.add(function(fish){
-				if(
-					((direction > 0) && (fish.x > 0))
-					||
-					((direction < 0) && (fish.x < 0))
-				)
-					fish.destroy();
-			}, this);
-
-		}, 500);
-
-	}
-	// function createKillers() {
-	// 	let createKiller1 = bindKiller[typeKillers[0]];
-	// 	let createKiller2 = bindKiller[typeKillers[1]];
-	// 	killers = game.add.group();
-	// 	game.physics.enable(killers, Phaser.Physics.ARCADE, false);
-	// 	killersTime1 = setInterval(createKiller1, 2500);
-	// 	killersTime2 = setInterval(createKiller2, 5000);
-	// }
-	// function bindKiller(killer) {
-	// 	return function () {
-	// 		let maxY = game.world.height - floor.height - (shark.height / 2);
-	// 		let minY = (shark.height / 2);
-	// 		let y = Math.random() * (maxY - minY) + minY;
-	//
-	// 		let outWorldDistance = 150;
-	// 		let direction = Math.random() > 0.5 ? -1 : 1;
-	// 		let x = direction > 0 ? (-1 * outWorldDistance) : (outWorldDistance + game.world.width);
-	//
-	// 		let killer = game.add.sprite(x, y, killer.name);
-	// 		killer.width = killer.width;
-	// 		killer.height = killer.height;
-	// 		if (direction < 0)
-	// 			killer.scale.x *= -1;
-	// 		game.physics.enable(killer, Phaser.Physics.ARCADE, false);
-	// 		killer.body.velocity.set(direction * killer.speed, 0);
-	// 		killer.checkWorldBounds = true;
-	//
-	// 		killers.addChild(killer);
-	//
-	// 		killer.events.onOutOfBounds.add(function (killer) {
-	// 			if (
-	// 					((direction > 0) && (killer.x > 0))
-	// 					||
-	// 					((direction < 0) && (killer.x < 0))
-	// 			)
-	// 				killer.destroy();
-	// 		}, this);
-	// 	}
-	// }
-	function createShark(){
-		shark = game.add.sprite(0, 0, 'shark');
-		// shark.width = typeFishs[0].width;
-		// shark.height = typeFishs[0].height;
-		shark.x = (game.world.width - shark.width) / 2;
-		shark.y = game.world.height - floor.height - (shark.height / 2);
-		shark.anchor.set(0.5, 0.5);
-		shark.inputEnabled = true;
-		shark.input.enableDrag(true);
-		shark.input.boundsRect = new Phaser.Rectangle(0, 0, game.world.width, game.world.height - floor.height);
-
-		game.physics.p2.enable(shark, true);
-		shark.body.clearShapes();
-		shark.body.loadPolygon('sprite-physics', 'shark');
-		shark.body.static = true;
-
-		game.physics.p2.moveToPointer(shark, 400);
-	}
-	function createMap(){
-		sea = game.add.sprite(0, 0, 'sea');
-		floor = game.add.sprite(0, 0, 'floor');
-		floor.y = game.world.height - floor.height;
-		game.physics.p2.enable(floor);
-		floor.body.static = true;
-		floor.anchor.setTo(0, 0);
-	}
-
-	function movingSharkDirection(){
-		let startX = shark.x;
-		shark.events.onDragUpdate.add((shark, pointer, newX) => {
-			if(newX < Math.abs(shark.width / 2))
-				shark.x = Math.abs(shark.width / 2);
-			if(newX < startX)
-				shark.scale.x = -1 * Math.abs(shark.scale.x);
-			if(newX > startX)
-				shark.scale.x = Math.abs(shark.scale.x);
-			startX = newX;
-		}, this);
-	}
-
-	layer.update = function () {
-		player.body.velocity.x = 0; //default speed - stationary
-	    if ( game.input.keyboard.isDown( controls.left ) ) {
-	    player.scale.x = -1;
-	    player.body.moveLeft( sideSpeed );
-	    player.body.clearShapes();
-	    player.body.loadPolygon('physicsLeftData', 'player');
-	    setBody();
-	    }
-	    else if ( game.input.keyboard.isDown( controls.right ) ) {
-	    player.scale.x = 1;
-	    player.body.clearShapes();
-	    player.body.loadPolygon('physicsData', 'player');
-	    console.log( player.body );
-	    player.body.moveRight( sideSpeed );
-	    setBody()
-	    }
-	    if ( game.input.keyboard.isDown( controls.jump ) && checkIfCanJump() && this.game.time.now > player.jumpTimer ) {
-	    player.body.moveUp( jumpSpeed ) ;
-	    player.jumpTimer = this.game.time.now + 0;
-	    }
-	    };function setBody() {
-	    player.body.fixedRotation = true;
-	    player.body.setCollisionGroup( collisionGroup );
-	    player.body.setMaterial( material );
-	    player.body.collideWorldBounds = true;
-	    player.body.mass = 4; }
 </script>
 </body>
 </html>
