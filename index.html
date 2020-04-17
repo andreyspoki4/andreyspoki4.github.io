@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
-    <title>Shark Life :)</title>
+    <title>Gamedev Phaser</title>
     <style>* { padding: 0; margin: 0; }</style>
     <script src="js/phaser.min.js"></script>
     <script src="js/phaser-plugin-virtual-gamepad.js"></script>
@@ -89,8 +89,9 @@
 
         },
         create() {
-			      let bestScore = localStorage.getItem('bestScore');
-            if(!bestScore) localStorage.setItem('bestScore', 0);
+			let bestScore = localStorage.getItem('bestScore');
+			if(!bestScore) localStorage.setItem('bestScore', 0);
+
             this.initFullScreen();
             this.preparePolygons();
             this.createMap();
@@ -219,8 +220,9 @@
             this.joystick = this.gamepad.addJoystick(this.world.width - (this.world.width / 4), this.world.height - (this.world.height / 4), 1, 'gamepad');
         },
         createScore(){
-        	let bestScore = this.scoreText = this.add.text(5, this.world.height - 25, 'Score: 0', { font: '18px Arial', fill: '#0095DD' });
-			    this.bestScoreText = this.add.text(5, this.world.height - 25, 'Best score: ${}', { font: '18px Arial', fill: '#0095DD' });
+        	let bestScore =
+            this.scoreText = this.add.text(5, this.world.height - 25, 'Score: 0', { font: '18px Arial', fill: '#0095DD' });
+			this.bestScoreText = this.add.text(5, this.world.height - 25, 'Best score: ${}', { font: '18px Arial', fill: '#0095DD' });
         },
         updateScore(points){
             this.score += points;
@@ -229,9 +231,9 @@
                 if(this.shark.body.lvl < 6)
                     this.setSharkLvl(++this.shark.body.lvl);
                 else{
-                  this.setSharkLvl(1);
-                  this.upGameLvl();
-                }
+					this.setSharkLvl(1);
+					this.upGameLvl();
+				}
 
                 this.scoreForNextLvl = 10 * this.shark.body.lvl;
             }
