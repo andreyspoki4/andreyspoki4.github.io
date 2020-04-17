@@ -64,7 +64,7 @@
 			8:{ sprite: { l: 'l_killer_2', r: 'r_killer_2'}, lvl: 7, points: 0, speed: 260},
             length: 6
         };
-
+        this.fullScreen = false;
     };
 
     PhaserGame.prototype = {
@@ -92,7 +92,7 @@
 			let bestScore = localStorage.getItem('bestScore');
 			if(!bestScore) localStorage.setItem('bestScore', 0);
 
-            this.initFullScreen();
+            //this.initFullScreen();
             this.preparePolygons();
             this.createMap();
             this.createScore();
@@ -109,10 +109,12 @@
         },
         update() {
            this.sharkMoving();
+           if (this.joystick.properties.inUse && !this.fullScreen) this.initFullScreen();
         },
         initFullScreen() {
+            this.fullScreen = true;
             this.scale.startFullScreen(true);
-            //this.scale.setGameSize(window.screen.availWidth, window.screen.availHeight);
+            this.scale.setGameSize(window.screen.availWidth, window.screen.availHeight);
         },
         createMap() {
             this.sea = this.add.sprite(0, 0, 'sea');
