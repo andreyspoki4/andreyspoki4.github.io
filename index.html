@@ -222,7 +222,7 @@
         createScore(){
         	let bestScore = localStorage.getItem('bestScore');
             this.scoreText = this.add.text(5, this.world.height - 25, 'Score: 0', { font: '18px Arial', fill: '#0095DD' });
-			this.bestScoreText = this.add.text(this.world.width - 50, this.world.height - 25, `Best score: ${bestScore}`, { font: '18px Arial', fill: '#0095DD' });
+			this.bestScoreText = this.add.text(this.world.width - 175, this.world.height - 25, `Best score: ${bestScore}`, { font: '18px Arial', fill: '#0095DD' });
         },
         updateScore(points){
             this.score += points;
